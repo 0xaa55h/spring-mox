@@ -15,7 +15,17 @@ flowchart TD
     B --> | @spring-mox/base generate function | C[generated/]
 ```
 
-## Setup
+## Usage
+
+### Spring Boot library (the thing which generates `routes.json`)
+
+- Add as dependency from Maven Central: `tbd`
+- Consult [MoxConfigurationProperties](./src/main/kotlin/dev/aa55h/spring/mox/MoxConfigurationProperties.kt) for further configuration. The default configuration generates `routes.json` in current working directory.
+
+### TypeScript library
+
+- Add NPM library - `@spring-mox/base`
+- Consult [index.ts](./spring-mox-base/src/index.ts) for options in `generate` function.
 
 ## License
 

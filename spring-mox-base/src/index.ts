@@ -7,25 +7,32 @@ import {IndexCodeGenerator} from "./gen/index.codegen.ts";
 
 export { SchemaCodeGenerator, FetchCodeGenerator, TanStackCodeGenerator, type RouteExport };
 
-export async function generate(schema: Bun.BunFile, out: Bun.BunFile, writeIndex: boolean = true) {
-  const sch = (await schema.json()) as RouteExport;
-  const generators = {
-    "schema.gen.ts": SchemaCodeGenerator,
-    "fetch.gen.ts": FetchCodeGenerator,
-    "tanstack.gen.ts": TanStackCodeGenerator,
-  };
+const generators = {
+  "schema.gen.ts": SchemaCodeGenerator,
+  "fetch.gen.ts": FetchCodeGenerator,
+  "tanstack.gen.ts": TanStackCodeGenerator,
+};
 
-  for (const [name, generator] of Object.entries(generators)) {
+/**
+ * Generate TypeScript route files
+ * @param schema Path to the `routes.json` file
+ * @param out Directory to which generate the files to
+ * @param enabled Specify the enabled generators (all by default)
+ * @param writeIndex Whether to create index file which reexports everything from the generated file (is generated in the same directory as out parameter specifies)
+ */
+export async function generate(schema: Bun.BunFile, out: Bun.BunFile, enabled: (keyof typeof generators)[] = ["schema.gen.ts", "fetch.gen.ts", "tanstack.gen.ts"], writeIndex: boolean = true) {
+  const sch = (await schema.json()) as RouteExport;
+  const enabledGenerators = Object.entries(generators).filter(([name]) => enabled.includes(name as keyof typeof generators));
+
+  for (const [name, generator] of enabledGenerators) {
     const gen = new generator(sch);
     await gen.run();
     await gen.endAndDumpTo(Bun.file(path.resolve(out.name || ".", name)))
   }
 
   if (writeIndex) {
-    const index = new IndexCodeGenerator(Object.keys(generators).map(name => `./${name}`));
+    const index = new IndexCodeGenerator(enabledGenerators.map(([k]) => k).map(name => `./${name}`));
     await index.run();
     await index.endAndDumpTo(Bun.file(path.resolve(out.name || ".", "index.ts")));
   }
 }
-
-await generate(Bun.file("../routes.json"), Bun.file("./generated"));

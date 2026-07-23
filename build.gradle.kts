@@ -10,8 +10,8 @@ plugins {
     signing
 }
 
-group = "dev.aa55h.spring.mox"
-version = "0.0.1-SNAPSHOT"
+group = "dev.aa55h"
+version = "1.0.0"
 description = "spring-mox"
 
 java {
@@ -54,6 +54,7 @@ tasks.bootJar {
 
 tasks.jar {
     enabled = true
+    archiveClassifier.set("")
 }
 
 publishing {
@@ -80,7 +81,7 @@ publishing {
                 url = "https://github.com/0xaa55h/spring-mox"
                 licenses {
                     license {
-                        name = " The MIT License (MIT) "
+                        name = "The MIT License (MIT)"
                         url = "https://mit-license.org/"
                     }
                 }
@@ -104,6 +105,12 @@ publishing {
     repositories {
         mavenLocal()
     }
+}
+
+val dokkaJavadocJar by tasks.registering(Jar::class) {
+    description = "A Javadoc JAR containing Dokka Javadoc"
+    from(tasks.dokkaGeneratePublicationJavadoc.flatMap { it.outputDirectory })
+    archiveClassifier.set("javadoc")
 }
 
 java {

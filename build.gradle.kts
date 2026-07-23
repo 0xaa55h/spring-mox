@@ -113,6 +113,10 @@ val dokkaJavadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
 
+tasks.withType<AbstractPublishToMaven> {
+    dependsOn(dokkaJavadocJar)
+}
+
 java {
     withSourcesJar()
 }

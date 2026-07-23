@@ -1,6 +1,7 @@
 package dev.aa55h.spring.mox
 
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Configuration
 
 /**
  * Configuration properties for Mox library.
@@ -8,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * @param outputPath The path to output route information.
  * @param packages The packages to match rest controllers against. Empty means to match all controllers (even the default "/error").
  */
+@Configuration
 @ConfigurationProperties(prefix = "mox")
 data class MoxConfigurationProperties(
     val enabled: Boolean = true,

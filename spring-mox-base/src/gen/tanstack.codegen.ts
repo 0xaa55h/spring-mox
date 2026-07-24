@@ -1,5 +1,5 @@
-import type {ParameterLocation, Route, RouteExport} from "../core-types.ts";
-import {capitalize, CodeGenerator, groupParametersByLocation} from "./core.ts";
+import type {Route, RouteExport} from "../core-types.ts";
+import {capitalize, CodeGenerator} from "./core.ts";
 
 export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
   constructor(data: RouteExport) {
@@ -8,14 +8,7 @@ export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
 
   override async prepare(): Promise<void> {
     this.writeLines([
-      `import {`,
-      `  mutationOptions,`,
-      `  queryOptions,`,
-      `  useMutation,`,
-      `  useQuery,`,
-      `  type UseMutationOptions,`,
-      `  type UseQueryOptions,`,
-      `} from "@tanstack/react-query";`,
+      `import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";`,
       `import * as calls from "./fetch.gen.ts";`,
       ``,
     ]);
@@ -39,79 +32,43 @@ export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
 
   private emitQueryBindings(route: Route): string[] {
     const name = capitalize(route.id);
-    const paramsTypeName = `${name}CallParams`;
-    const allOptional = this.computeAllOptional(route);
-    const returnType = `calls.${name}Response`;
-    const errorType = `calls.${name}Error`;
-    const paramsArg = `params: calls.${paramsTypeName}${allOptional ? " = {}" : ""}`;
 
-    const optionsFn = [
-      `// ${route.annotation}`,
-      `export function ${route.id}QueryOptions(${paramsArg}, options?: Partial<UseQueryOptions<${returnType}, ${errorType}>>) {`,
-      `  return queryOptions({`,
-      `    queryKey: [...${JSON.stringify(route.cacheKey)}, params],`,
-      `    queryFn: () => calls.${route.id}(params),`,
-      `    ...options,`,
-      `  });`,
-      `}`,
-    ].join("\n");
-
-    const hookFn = [
-      `export function use${name}(${paramsArg}, options?: Partial<UseQueryOptions<${returnType}, ${errorType}>>) {`,
-      `  return useQuery(${route.id}QueryOptions(params, options));`,
-      `}`,
-    ].join("\n");
-
-    return [optionsFn, hookFn];
+    return [
+      [
+        `// ${route.annotation}`,
+        `export function use${name}(`,
+        `  params: Parameters<typeof calls.${route.id}.queryOptions>[0],`,
+        `  options?: Parameters<typeof calls.${route.id}.queryOptions>[1],`,
+        `) {`,
+        `  return useQuery(calls.${route.id}.queryOptions(params, options));`,
+        `}`,
+      ].join("\n"),
+    ];
   }
 
   private emitMutationBindings(route: Route): string[] {
     const name = capitalize(route.id);
-    const paramsTypeName = `${name}CallParams`;
-    const returnType = `calls.${name}Response`;
-    const errorType = `calls.${name}Error`;
     const invalidates = route.invalidates ?? [];
 
-    const mutationOptionsType = `UseMutationOptions<${returnType}, ${errorType}, calls.${paramsTypeName}>`;
-
-    const optionsFn = [
-      `// ${route.annotation}`,
-      `export function ${route.id}MutationOptions(options?: Partial<${mutationOptionsType}>): ${mutationOptionsType} {`,
-      `  return mutationOptions({`,
-      `    mutationFn: (params: calls.${paramsTypeName}) => calls.${route.id}(params),`,
-      `    ...options,`,
-      `  });`,
-      `}`,
-    ].join("\n");
-
-    const hookFn = [
-      `export function use${name}Mutation(options?: Partial<${mutationOptionsType}>) {`,
-      ...(invalidates.length > 0 ? [`  const queryClient = useQueryClient();`] : []),
-      `  return useMutation(${route.id}MutationOptions({`,
-      ...(invalidates.length > 0
-        ? [
-          `    onSuccess: () => {`,
-          ...invalidates.map((key) => `      queryClient.invalidateQueries({ queryKey: [${JSON.stringify(key)}] });`),
-          `    },`,
-        ]
-        : []),
-      `    ...options,`,
-      `  }));`,
-      `}`,
-    ].join("\n");
-
-    return [optionsFn, hookFn];
-  }
-
-  private computeAllOptional(route: Route): boolean {
-    const byLocation = groupParametersByLocation(route);
-    for (const location of ["PATH", "QUERY", "HEADER"] as ParameterLocation[]) {
-      const parameters = byLocation.get(location);
-      if (!parameters || parameters.length === 0) continue;
-      if (location === "PATH" || parameters.some((p) => p.required)) return false;
-    }
-    if (route.requestBody?.required) return false;
-    if (route.parts.some((p) => p.required)) return false;
-    return route.method.length <= 1;
+    return [
+      [
+        `// ${route.annotation}`,
+        `export function use${name}Mutation(`,
+        `  options?: Parameters<typeof calls.${route.id}.mutationOptions>[0],`,
+        `) {`,
+        ...(invalidates.length > 0 ? [`  const queryClient = useQueryClient();`] : []),
+        `  return useMutation(calls.${route.id}.mutationOptions({`,
+        ...(invalidates.length > 0
+          ? [
+            `    onSuccess: () => {`,
+            ...invalidates.map((key) => `      queryClient.invalidateQueries({queryKey: [${JSON.stringify(key)}]});`),
+            `    },`,
+          ]
+          : []),
+        `    ...options,`,
+        `  }));`,
+        `}`,
+      ].join("\n"),
+    ];
   }
 }

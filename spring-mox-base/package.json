@@ -1,8 +1,12 @@
 {
   "name": "@spring-mox/base",
+  "description": "Generate type-safe routes from Spring WebMvc metadata",
   "version": "0.1.0",
   "module": "src/index.ts",
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "publishConfig": {
     "access": "public"
   },

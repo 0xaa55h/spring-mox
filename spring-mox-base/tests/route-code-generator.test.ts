@@ -67,9 +67,10 @@ const fixture: RouteExport = {
   },
 };
 
-// Generated files import "zod" and "./schema.gen.ts" as bare/relative specifiers,
-// so the output dir must sit inside this project's node_modules resolution chain
-// (unlike os.tmpdir(), which resolves to nothing).
+// Generated files import "zod", "@spring-mox/base" and "./schema.gen.ts" as bare/relative
+// specifiers, so the output dir must sit inside this project's node_modules resolution chain
+// (unlike os.tmpdir(), which resolves to nothing) — @spring-mox/base self-resolves via the
+// package's own "exports" field as long as the importer is somewhere under this package root.
 async function setupGeneratedDir(): Promise<string> {
   const dir = await mkdtemp(join(import.meta.dir, "..", ".test-tmp-"));
   await Bun.write(join(dir, "routes.json"), JSON.stringify(fixture));
@@ -80,7 +81,7 @@ async function setupGeneratedDir(): Promise<string> {
 
   const fetchGen = new FetchCodeGenerator(fixture);
   await fetchGen.run();
-  await fetchGen.endAndDumpTo(Bun.file(join(dir, "calls.gen.ts")));
+  await fetchGen.endAndDumpTo(Bun.file(join(dir, "fetch.gen.ts")));
 
   return dir;
 }
@@ -117,57 +118,50 @@ test("generateSchemas covers requestBody, parameters, parts, and responses", asy
   }
 });
 
-test("generateCalls builds a CallParams type + call fn per route", async () => {
+test("generateCalls builds one defineRoute() call per route with the right config shape", async () => {
   const dir = await setupGeneratedDir();
   try {
-    const code = await Bun.file(join(dir, "calls.gen.ts")).text();
+    const code = await Bun.file(join(dir, "fetch.gen.ts")).text();
 
-    // annotation comment precedes the generated call fn
-    expect(code).toContain("// ItemController#xyz\nexport async function xyz(");
+    expect(code).toContain(`import {createApiClient} from "@spring-mox/base";`);
+    expect(code).toContain(`export const client = createApiClient({baseUrl: ""});`);
 
-    // multi-method route: method required, no default
-    expect(code).toContain("export interface XyzCallParams {");
-    expect(code).toContain("path: schemas.XyzPathParams;");
-    expect(code).toContain("query: schemas.XyzQueryParams;"); // has a required param (q)
-    expect(code).toContain("headers?: schemas.XyzHeaderParams;"); // all header params optional
-    expect(code).toContain("parts: schemas.XyzParts;"); // has a required part (file)
-    expect(code).toMatch(/method: "GET" \| "PUT";/);
-    // discriminated union of only the ok (2xx) responses; 404 is an error status, excluded here
-    expect(code).toContain(
-      "export type XyzResponse = ApiResponse<200, schemas.XyzResponse200> | ApiResponse<204, null>;",
-    );
-    expect(code).toContain("export type XyzError = ApiResponseError<null>;");
-    expect(code).toContain("export async function xyz(params: XyzCallParams): Promise<XyzResponse> {");
-    expect(code).toContain("return parseResponse<XyzResponse, null>(res, {");
+    // annotation comment precedes the generated route definition
+    expect(code).toContain("// ItemController#xyz\nexport const xyz = client.defineRoute({");
 
-    // single-method + required body: method optional, but body required -> no default
-    expect(code).toContain("export interface SingleCallParams {");
-    expect(code).toContain("body: schemas.SingleRequestBody;");
-    expect(code).toMatch(/method\?: "POST";/);
-    expect(code).toContain("export type SingleResponse = ApiResponse<200, null>;");
-    expect(code).toContain("export type SingleError = ApiResponseError<unknown>;");
-    expect(code).toContain("export async function single(params: SingleCallParams): Promise<SingleResponse> {");
+    // multi-method route: method array with both methods, path params always required
+    expect(code).toContain(`method: ["GET","PUT"],`);
+    expect(code).toContain(`path: "/items/{id}",`);
+    expect(code).toContain("pathParams: schemas.zXyzPathParams,");
+    expect(code).toContain("queryParams: schemas.zXyzQueryParams,"); // has a required param (q) -> not optional
+    expect(code).toContain("headers: schemas.zXyzHeaderParams.optional(),"); // all header params optional
+    expect(code).toContain("parts: schemas.zXyzParts,"); // has a required part (file) -> not optional
+    expect(code).toContain("200: schemas.zXyzResponse200,");
+    expect(code).toContain("204: null,");
+    expect(code).toContain("404: null,");
+    expect(code).toContain(`cacheKey: ["xyz"],`);
+    expect(code).toContain(`invalidates: null,`);
 
-    // single-method + optional body: every key optional -> params gets a default
-    expect(code).toContain("export interface OptionalBodyCallParams {");
-    expect(code).toContain("body?: schemas.OptionalBodyRequestBody;");
-    expect(code).toContain("export type OptionalBodyResponse = ApiResponse<200, null>;");
-    expect(code).toContain(
-      "export async function optionalBody(params: OptionalBodyCallParams = {}): Promise<OptionalBodyResponse> {",
-    );
+    // single-method + required body
+    expect(code).toContain("// ItemController#single\nexport const single = client.defineRoute({");
+    expect(code).toContain("body: schemas.zSingleRequestBody,");
+    expect(code).toContain(`method: ["POST"],`);
+
+    // single-method + optional body -> .optional() suffix
+    expect(code).toContain("body: schemas.zOptionalBodyRequestBody.optional(),");
   } finally {
     await rm(dir, {recursive: true, force: true});
   }
 });
 
-test("generated call fn builds URL, query, headers, parts, and validates response by status", async () => {
+test("generated route builds URL, query, headers, parts, and validates response by status", async () => {
   const dir = await setupGeneratedDir();
   try {
-    const calls = await import(join(dir, "calls.gen.ts"));
+    const calls = await import(join(dir, "fetch.gen.ts"));
 
     const requests: {url: string; init: RequestInit}[] = [];
-    calls.config.baseUrl = "http://x";
-    calls.config.fetch = async (input: string, init: RequestInit) => {
+    calls.client.baseUrl = "http://x";
+    calls.client.fetch = async (input: string, init: RequestInit) => {
       requests.push({url: input, init});
       return new Response(JSON.stringify({message: "hi"}), {
         status: 200,
@@ -198,13 +192,13 @@ test("generated call fn builds URL, query, headers, parts, and validates respons
   }
 });
 
-test("generated call fn resolves data to null for null-typed responses without reading the body", async () => {
+test("generated route resolves data to null for null-typed responses without reading the body", async () => {
   const dir = await setupGeneratedDir();
   try {
-    const calls = await import(join(dir, "calls.gen.ts"));
+    const calls = await import(join(dir, "fetch.gen.ts"));
 
-    calls.config.baseUrl = "http://x";
-    calls.config.fetch = async () => new Response(null, {status: 204});
+    calls.client.baseUrl = "http://x";
+    calls.client.fetch = async () => new Response(null, {status: 204});
 
     const result = await calls.xyz({
       path: {id: "abc123"},
@@ -219,13 +213,14 @@ test("generated call fn resolves data to null for null-typed responses without r
   }
 });
 
-test("generated call fn throws ApiResponseError on an unlisted response status", async () => {
+test("generated route throws ApiResponseError on an unlisted response status", async () => {
   const dir = await setupGeneratedDir();
   try {
-    const calls = await import(join(dir, "calls.gen.ts"));
+    const calls = await import(join(dir, "fetch.gen.ts"));
+    const {ApiResponseError} = await import("../src/runtime.ts");
 
-    calls.config.baseUrl = "http://x";
-    calls.config.fetch = async () => new Response(null, {status: 500});
+    calls.client.baseUrl = "http://x";
+    calls.client.fetch = async () => new Response(null, {status: 500});
 
     let caught: unknown;
     try {
@@ -234,20 +229,21 @@ test("generated call fn throws ApiResponseError on an unlisted response status",
       caught = err;
     }
 
-    expect(caught).toBeInstanceOf(calls.ApiResponseError);
-    expect((caught as InstanceType<typeof calls.ApiResponseError>).status).toBe(500);
+    expect(caught).toBeInstanceOf(ApiResponseError);
+    expect((caught as InstanceType<typeof ApiResponseError>).status).toBe(500);
   } finally {
     await rm(dir, {recursive: true, force: true});
   }
 });
 
-test("generated call fn throws ApiResponseError with typed data for a declared non-ok status", async () => {
+test("generated route throws ApiResponseError with typed data for a declared non-ok status", async () => {
   const dir = await setupGeneratedDir();
   try {
-    const calls = await import(join(dir, "calls.gen.ts"));
+    const calls = await import(join(dir, "fetch.gen.ts"));
+    const {ApiResponseError} = await import("../src/runtime.ts");
 
-    calls.config.baseUrl = "http://x";
-    calls.config.fetch = async () => new Response(null, {status: 404});
+    calls.client.baseUrl = "http://x";
+    calls.client.fetch = async () => new Response(null, {status: 404});
 
     let caught: unknown;
     try {
@@ -256,8 +252,8 @@ test("generated call fn throws ApiResponseError with typed data for a declared n
       caught = err;
     }
 
-    expect(caught).toBeInstanceOf(calls.ApiResponseError);
-    const apiErr = caught as InstanceType<typeof calls.ApiResponseError>;
+    expect(caught).toBeInstanceOf(ApiResponseError);
+    const apiErr = caught as InstanceType<typeof ApiResponseError>;
     expect(apiErr.status).toBe(404);
     expect(apiErr.data).toBeNull();
     expect(apiErr.headers).toBeInstanceOf(Headers);

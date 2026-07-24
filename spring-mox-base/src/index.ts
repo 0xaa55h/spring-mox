@@ -5,7 +5,20 @@ import {TanStackCodeGenerator} from "./gen/tanstack.codegen.ts";
 import * as path from "node:path";
 import {IndexCodeGenerator} from "./gen/index.codegen.ts";
 
-export { SchemaCodeGenerator, FetchCodeGenerator, TanStackCodeGenerator, type RouteExport };
+export {SchemaCodeGenerator, FetchCodeGenerator, TanStackCodeGenerator, type RouteExport};
+export {
+  createApiClient,
+  ApiResponseError,
+  type ApiClient,
+  type ApiResponse,
+  type FetchFn,
+  type HttpMethod,
+  type RouteConfig,
+  type RouteCall,
+  type RouteParams,
+  type SuccessUnion,
+  type ErrorUnion,
+} from "./runtime.ts";
 
 const generators = {
   "schema.gen.ts": SchemaCodeGenerator,

@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "dev.aa55h"
-version = "1.0.0"
+version = "0.1.0"
 description = "spring-mox"
 
 java {
@@ -57,6 +57,12 @@ tasks.jar {
     archiveClassifier.set("")
 }
 
+val dokkaJavadocJar by tasks.registering(Jar::class) {
+    description = "A Javadoc JAR containing Dokka Javadoc"
+    from(tasks.dokkaGeneratePublicationJavadoc.flatMap { it.outputDirectory })
+    archiveClassifier.set("javadoc")
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -65,6 +71,7 @@ publishing {
             version = project.version as String
 
             from(components["java"])
+            artifact(dokkaJavadocJar)
 
             versionMapping {
                 usage("java-api") {
@@ -105,16 +112,6 @@ publishing {
     repositories {
         mavenLocal()
     }
-}
-
-val dokkaJavadocJar by tasks.registering(Jar::class) {
-    description = "A Javadoc JAR containing Dokka Javadoc"
-    from(tasks.dokkaGeneratePublicationJavadoc.flatMap { it.outputDirectory })
-    archiveClassifier.set("javadoc")
-}
-
-tasks.withType<AbstractPublishToMaven> {
-    dependsOn(dokkaJavadocJar)
 }
 
 java {

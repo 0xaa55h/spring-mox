@@ -19,7 +19,7 @@ flowchart TD
 
 ### Spring Boot library (the thing which generates `routes.json`)
 
-- Add as dependency from Maven Central: `tbd`
+- Add as dependency from Maven Central: `implementation("dev.aa55h:spring-mox:0.1.0")` (or Maven equivalent)
 - Consult [MoxConfigurationProperties](./src/main/kotlin/dev/aa55h/spring/mox/MoxConfigurationProperties.kt) for further configuration. The default configuration generates `routes.json` in current working directory.
 
 ### TypeScript library

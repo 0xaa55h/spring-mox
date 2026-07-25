@@ -4,7 +4,13 @@
   "version": "0.1.0",
   "module": "src/index.ts",
   "license": "MIT",
-  "keywords": ["bun", "vite", "vite-plugin", "spring-boot", "spring"],
+  "keywords": [
+    "bun",
+    "vite",
+    "vite-plugin",
+    "spring-boot",
+    "spring"
+  ],
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

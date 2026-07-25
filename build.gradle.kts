@@ -25,6 +25,7 @@ repositories {
 }
 
 dependencies {
+    nmcpAggregation(project(":"))
     implementation(libs.jsonschema.generator)
     implementation(libs.jsonschema.module.jackson)
     implementation(libs.jsonschema.module.jakarta.validation)

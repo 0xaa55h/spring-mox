@@ -16,7 +16,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Publish
-        run: ./gradlew publishAggregationToMavenCentral
+        run: ./gradlew publishAggregationToCentralPortal
         env:
           CENTRAL_USERNAME:      ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD:      ${{ secrets.CENTRAL_PASSWORD }}

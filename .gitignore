@@ -41,3 +41,7 @@ out/
 
 routes.json
 generated/
+
+# bun workspaces (bun install)
+node_modules
+bun.lock~

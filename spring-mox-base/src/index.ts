@@ -25,11 +25,11 @@ export {
   TanStackCodeGenerator,
 };
 
-const generators = {
+export const generators = {
   "schema.gen.ts": SchemaCodeGenerator,
   "fetch.gen.ts": FetchCodeGenerator,
   "tanstack.gen.ts": TanStackCodeGenerator,
-};
+} as const;
 
 /**
  * Generate TypeScript route files

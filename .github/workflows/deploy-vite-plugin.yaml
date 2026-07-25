@@ -1,4 +1,4 @@
-name: Publish spring-mox-base to npm
+name: Publish spring-mox-vite-plugin to npm
 
 on:
   release:
@@ -20,12 +20,8 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Run tests
-        working-directory: spring-mox-base
-        run: bun test
-
       - name: Type check
-        working-directory: spring-mox-base
+        working-directory: spring-mox-vite-plugin
         run: bun run typecheck
 
       - name: Configure npm auth
@@ -34,7 +30,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish
-        working-directory: spring-mox-base
+        working-directory: spring-mox-vite-plugin
         run: bun publish --access public --production
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}

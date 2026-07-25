@@ -1,0 +1,19 @@
+{
+  "name": "@spring-mox/vite-plugin-react",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@spring-mox/base": "latest",
+    "vite": "^8.1.5"
+  }
+}

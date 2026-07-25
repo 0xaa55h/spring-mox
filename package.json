@@ -1,0 +1,16 @@
+{
+  "name": "@spring-mox/root",
+  "private": true,
+  "workspaces": [
+    "spring-mox-base",
+    "spring-mox-vite-plugin"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "2.5.5"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "bun run --filter '*' typecheck"
+  }
+}

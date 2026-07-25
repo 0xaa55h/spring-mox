@@ -23,12 +23,15 @@ jobs:
       - name: Run tests
         run: bun test
 
+      - name: Type check
+        run: bun run typecheck
+
       - name: Configure npm auth
         run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish
-        run: bun publish --access public
+        run: bun publish --access public --production
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,14 +1,17 @@
-import {z} from "zod";
 import {
   mutationOptions,
-  queryOptions,
   type QueryKey,
+  queryOptions,
   type UseMutationOptions,
   type UseQueryOptions,
 } from "@tanstack/react-query";
-import type {HttpMethod} from "./core-types.ts";
+import type { z } from "zod";
+import type { HttpMethod } from "./core-types.ts";
 
-export type FetchFn = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+export type FetchFn = (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => Promise<Response>;
 
 const PATH_PLACEHOLDER = /\{([^}]+)}/g;
 
@@ -20,7 +23,11 @@ export interface ApiResponse<S extends number, T> {
 }
 
 export class ApiResponseError<T = unknown> extends Error {
-  constructor(readonly status: number, readonly data: T, readonly headers: Headers) {
+  constructor(
+    readonly status: number,
+    readonly data: T,
+    readonly headers: Headers,
+  ) {
     super(`Request failed with status ${status}`);
     this.name = "ApiResponseError";
   }
@@ -32,7 +39,9 @@ type Is2xx<K extends number> = `${K}` extends `2${string}` ? true : false;
 
 type ResponsesMap = Record<number, z.ZodTypeAny | null>;
 
-type SchemaData<T extends z.ZodTypeAny | null> = T extends z.ZodTypeAny ? z.infer<T> : null;
+type SchemaData<T extends z.ZodTypeAny | null> = T extends z.ZodTypeAny
+  ? z.infer<T>
+  : null;
 
 export type SuccessUnion<TResponses extends ResponsesMap> = {
   [K in keyof TResponses]: K extends number
@@ -43,22 +52,32 @@ export type SuccessUnion<TResponses extends ResponsesMap> = {
 }[keyof TResponses];
 
 type ErrorDataUnion<TResponses extends ResponsesMap> = {
-  [K in keyof TResponses]: K extends number ? (Is2xx<K> extends true ? never : SchemaData<TResponses[K]>) : never;
+  [K in keyof TResponses]: K extends number
+    ? Is2xx<K> extends true
+      ? never
+      : SchemaData<TResponses[K]>
+    : never;
 }[keyof TResponses];
 
-export type ErrorUnion<TResponses extends ResponsesMap> = [ErrorDataUnion<TResponses>] extends [never]
+export type ErrorUnion<TResponses extends ResponsesMap> = [
+  ErrorDataUnion<TResponses>,
+] extends [never]
   ? unknown
   : ErrorDataUnion<TResponses>;
 
-type OptionalField<K extends string, T> = undefined extends T ? {[P in K]?: T} : {[P in K]: T};
+type OptionalField<K extends string, T> = undefined extends T
+  ? { [P in K]?: T }
+  : { [P in K]: T };
 
-type SchemaField<K extends string, TSchema extends z.ZodTypeAny | undefined> = TSchema extends z.ZodTypeAny
-  ? OptionalField<K, z.infer<TSchema>>
-  : {};
+type SchemaField<
+  K extends string,
+  TSchema extends z.ZodTypeAny | undefined,
+> = TSchema extends z.ZodTypeAny ? OptionalField<K, z.infer<TSchema>> : {};
 
-type MethodField<TMethods extends readonly HttpMethod[]> = TMethods["length"] extends 1
-  ? {method?: TMethods[number]}
-  : {method: TMethods[number]};
+type MethodField<TMethods extends readonly HttpMethod[]> =
+  TMethods["length"] extends 1
+    ? { method?: TMethods[number] }
+    : { method: TMethods[number] };
 
 export type RouteParams<
   TMethods extends readonly HttpMethod[],
@@ -107,21 +126,45 @@ export interface RouteCallMeta {
 type QueryCapability<TParams, TResponses extends ResponsesMap> = {
   queryOptions(
     params: TParams,
-    options?: Partial<UseQueryOptions<SuccessUnion<TResponses>, ApiResponseError<ErrorUnion<TResponses>>>>,
-  ): UseQueryOptions<SuccessUnion<TResponses>, ApiResponseError<ErrorUnion<TResponses>>, SuccessUnion<TResponses>, QueryKey>;
+    options?: Partial<
+      UseQueryOptions<
+        SuccessUnion<TResponses>,
+        ApiResponseError<ErrorUnion<TResponses>>
+      >
+    >,
+  ): UseQueryOptions<
+    SuccessUnion<TResponses>,
+    ApiResponseError<ErrorUnion<TResponses>>,
+    SuccessUnion<TResponses>,
+    QueryKey
+  >;
 };
 
 type MutationCapability<TParams, TResponses extends ResponsesMap> = {
   mutationOptions(
-    options?: Partial<UseMutationOptions<SuccessUnion<TResponses>, ApiResponseError<ErrorUnion<TResponses>>, TParams>>,
-  ): UseMutationOptions<SuccessUnion<TResponses>, ApiResponseError<ErrorUnion<TResponses>>, TParams>;
+    options?: Partial<
+      UseMutationOptions<
+        SuccessUnion<TResponses>,
+        ApiResponseError<ErrorUnion<TResponses>>,
+        TParams
+      >
+    >,
+  ): UseMutationOptions<
+    SuccessUnion<TResponses>,
+    ApiResponseError<ErrorUnion<TResponses>>,
+    TParams
+  >;
 };
 
-export type RouteCall<TParams, TResponses extends ResponsesMap, TMethods extends readonly HttpMethod[]> = ((
-  params: TParams,
-) => Promise<SuccessUnion<TResponses>>) &
+export type RouteCall<
+  TParams,
+  TResponses extends ResponsesMap,
+  TMethods extends readonly HttpMethod[],
+> = ((params: TParams) => Promise<SuccessUnion<TResponses>>) &
   RouteCallMeta &
-  (TMethods extends readonly ["GET"] ? QueryCapability<TParams, TResponses> : MutationCapability<TParams, TResponses>);
+  (TMethods extends readonly ["GET"]
+    ? QueryCapability<TParams, TResponses>
+    : MutationCapability<TParams, TResponses>);
 
 export interface ApiClient {
   baseUrl: string;
@@ -135,34 +178,70 @@ export interface ApiClient {
     TParts extends z.ZodTypeAny | undefined = undefined,
     TResponses extends ResponsesMap = {},
   >(
-    config: RouteConfig<TMethods, TPath, TQuery, THeaders, TBody, TParts, TResponses>,
-  ): RouteCall<RouteParams<TMethods, TPath, TQuery, THeaders, TBody, TParts>, TResponses, TMethods>;
+    config: RouteConfig<
+      TMethods,
+      TPath,
+      TQuery,
+      THeaders,
+      TBody,
+      TParts,
+      TResponses
+    >,
+  ): RouteCall<
+    RouteParams<TMethods, TPath, TQuery, THeaders, TBody, TParts>,
+    TResponses,
+    TMethods
+  >;
 }
 
 // === Runtime ===
 
-export function createApiClient(config: {baseUrl: string; fetch?: FetchFn}): ApiClient {
+export function createApiClient(config: {
+  baseUrl: string;
+  fetch?: FetchFn;
+}): ApiClient {
   const client: ApiClient = {
     baseUrl: config.baseUrl,
     fetch: config.fetch ?? ((input, init) => globalThis.fetch(input, init)),
-    defineRoute: ((routeConfig: RouteConfig<any, any, any, any, any, any, any>) =>
-      buildRouteCall(client, routeConfig)) as ApiClient["defineRoute"],
+    defineRoute: ((
+      routeConfig: RouteConfig<any, any, any, any, any, any, any>,
+    ) => buildRouteCall(client, routeConfig)) as ApiClient["defineRoute"],
   };
   return client;
 }
 
-function buildRouteCall(client: ApiClient, config: RouteConfig<any, any, any, any, any, any, any>): any {
+function buildRouteCall(
+  client: ApiClient,
+  config: RouteConfig<any, any, any, any, any, any, any>,
+): any {
   const methods: readonly HttpMethod[] = config.method;
   const methodRequired = methods.length > 1;
 
-  async function execute(params: Record<string, unknown> = {}): Promise<unknown> {
-    const path = config.pathParams ? config.pathParams.parse(params.path) : undefined;
-    const query = config.queryParams && params.query !== undefined ? config.queryParams.parse(params.query) : undefined;
-    const headers = config.headers && params.headers !== undefined ? config.headers.parse(params.headers) : undefined;
-    const body = config.body && params.body !== undefined ? config.body.parse(params.body) : undefined;
-    const parts = config.parts && params.parts !== undefined ? config.parts.parse(params.parts) : undefined;
+  async function execute(
+    params: Record<string, unknown> = {},
+  ): Promise<unknown> {
+    const path = config.pathParams
+      ? config.pathParams.parse(params.path)
+      : undefined;
+    const query =
+      config.queryParams && params.query !== undefined
+        ? config.queryParams.parse(params.query)
+        : undefined;
+    const headers =
+      config.headers && params.headers !== undefined
+        ? config.headers.parse(params.headers)
+        : undefined;
+    const body =
+      config.body && params.body !== undefined
+        ? config.body.parse(params.body)
+        : undefined;
+    const parts =
+      config.parts && params.parts !== undefined
+        ? config.parts.parse(params.parts)
+        : undefined;
 
-    const url = client.baseUrl + buildPath(config.path, path) + queryString(query);
+    const url =
+      client.baseUrl + buildPath(config.path, path) + queryString(query);
 
     const requestHeaders: Record<string, string> = {};
     if (headers) {
@@ -179,17 +258,28 @@ function buildRouteCall(client: ApiClient, config: RouteConfig<any, any, any, an
       const formData = new FormData();
       for (const [key, value] of Object.entries(parts)) {
         if (value === undefined) continue;
-        formData.append(key, typeof value === "string" ? value : JSON.stringify(value));
+        formData.append(
+          key,
+          typeof value === "string" ? value : JSON.stringify(value),
+        );
       }
       requestBody = formData;
     }
 
     const method = methodRequired ? (params.method as HttpMethod) : methods[0];
-    const res = await client.fetch(url, {method, headers: requestHeaders, body: requestBody});
+    const res = await client.fetch(url, {
+      method,
+      headers: requestHeaders,
+      body: requestBody,
+    });
     return parseResponse(res, config.responses);
   }
 
-  const call = execute as unknown as RouteCall<unknown, ResponsesMap, readonly HttpMethod[]> & {
+  const call = execute as unknown as RouteCall<
+    unknown,
+    ResponsesMap,
+    readonly HttpMethod[]
+  > & {
     queryOptions: unknown;
     mutationOptions: unknown;
   };
@@ -218,7 +308,10 @@ function buildRouteCall(client: ApiClient, config: RouteConfig<any, any, any, an
   return call;
 }
 
-function buildPath(pattern: string, pathParams: Record<string, unknown> | undefined): string {
+function buildPath(
+  pattern: string,
+  pathParams: Record<string, unknown> | undefined,
+): string {
   return pattern.replace(PATH_PLACEHOLDER, (_match, name: string) => {
     if (!pathParams) return "";
     return encodeURIComponent(String(pathParams[name]));
@@ -236,15 +329,20 @@ function queryString(query: Record<string, unknown> | undefined): string {
 }
 
 async function readBody(res: Response): Promise<unknown> {
-  return res.headers.get("content-type")?.includes("json") ? res.json() : res.text();
+  return res.headers.get("content-type")?.includes("json")
+    ? res.json()
+    : res.text();
 }
 
-async function parseResponse(res: Response, responses: ResponsesMap): Promise<unknown> {
+async function parseResponse(
+  res: Response,
+  responses: ResponsesMap,
+): Promise<unknown> {
   if (!(res.status in responses)) {
     throw new ApiResponseError(res.status, await readBody(res), res.headers);
   }
   const schema = responses[res.status];
   const data = schema == null ? null : schema.parse(await readBody(res));
   if (!res.ok) throw new ApiResponseError(res.status, data, res.headers);
-  return {status: res.status, data, headers: res.headers, ok: true};
+  return { status: res.status, data, headers: res.headers, ok: true };
 }

@@ -1,4 +1,4 @@
-import type {Parameter, ParameterLocation, Route} from "../core-types.ts";
+import type { Parameter, ParameterLocation, Route } from "../core-types.ts";
 
 export const LOCATION_SUFFIX: Record<ParameterLocation, string> = {
   QUERY: "QueryParams",
@@ -10,7 +10,9 @@ export function capitalize(name: string): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-export function groupParametersByLocation(route: Route): Map<ParameterLocation, Parameter[]> {
+export function groupParametersByLocation(
+  route: Route,
+): Map<ParameterLocation, Parameter[]> {
   const byLocation = new Map<ParameterLocation, Parameter[]>();
   for (const parameter of route.parameters) {
     const bucket = byLocation.get(parameter.location) ?? [];
@@ -21,7 +23,10 @@ export function groupParametersByLocation(route: Route): Map<ParameterLocation, 
 }
 
 export abstract class CodeGenerator<TData> {
-  public constructor(protected readonly data: TData, private writable: Bun.ArrayBufferSink = new Bun.ArrayBufferSink()) {}
+  public constructor(
+    protected readonly data: TData,
+    private writable: Bun.ArrayBufferSink = new Bun.ArrayBufferSink(),
+  ) {}
 
   abstract prepare(): Promise<void>;
   abstract emit(): Promise<void>;
@@ -37,7 +42,7 @@ export abstract class CodeGenerator<TData> {
     return this.writable.write(`${line}\n`);
   }
   writeLines(lines: string[]) {
-    return lines.map(it => this.writable.write(`${it}\n`))
+    return lines.map((it) => this.writable.write(`${it}\n`));
   }
   write(line: string) {
     return this.writable.write(line);

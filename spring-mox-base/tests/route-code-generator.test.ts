@@ -1,9 +1,9 @@
-import {expect, test} from "bun:test";
-import {mkdtemp, rm} from "node:fs/promises";
-import {join} from "node:path";
-import {SchemaCodeGenerator} from "../src/gen/schema.codegen.ts";
-import {FetchCodeGenerator} from "../src/gen/fetch.codegen.ts";
-import type {RouteExport} from "../src/core-types.ts";
+import { expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import type { RouteExport } from "../src/core-types.ts";
+import { FetchCodeGenerator } from "../src/gen/fetch.codegen.ts";
+import { SchemaCodeGenerator } from "../src/gen/schema.codegen.ts";
 
 const fixture: RouteExport = {
   version: "https://json-schema.org/draft/2020-12/schema",
@@ -16,20 +16,48 @@ const fixture: RouteExport = {
       method: ["GET", "PUT"],
       invalidates: null,
       parameters: [
-        {name: "q", location: "QUERY", type: {type: "string"}, required: true, defaultValue: null},
-        {name: "limit", location: "QUERY", type: {type: "number"}, required: false, defaultValue: null},
-        {name: "id", location: "PATH", type: {type: "string"}, required: true, defaultValue: null},
-        {name: "x-auth", location: "HEADER", type: {type: "string"}, required: false, defaultValue: null},
+        {
+          name: "q",
+          location: "QUERY",
+          type: { type: "string" },
+          required: true,
+          defaultValue: null,
+        },
+        {
+          name: "limit",
+          location: "QUERY",
+          type: { type: "number" },
+          required: false,
+          defaultValue: null,
+        },
+        {
+          name: "id",
+          location: "PATH",
+          type: { type: "string" },
+          required: true,
+          defaultValue: null,
+        },
+        {
+          name: "x-auth",
+          location: "HEADER",
+          type: { type: "string" },
+          required: false,
+          defaultValue: null,
+        },
       ],
       parts: [
-        {name: "file", type: {type: "string"}, required: true},
-        {name: "caption", type: {type: "string"}, required: false},
+        { name: "file", type: { type: "string" }, required: true },
+        { name: "caption", type: { type: "string" }, required: false },
       ],
       requestBody: null,
       responses: [
-        {statusCode: 200, type: {$ref: "#/$defs/Abc"}, contentTypes: ["application/json"]},
-        {statusCode: 204, type: null, contentTypes: []},
-        {statusCode: 404, type: null, contentTypes: []},
+        {
+          statusCode: 200,
+          type: { $ref: "#/$defs/Abc" },
+          contentTypes: ["application/json"],
+        },
+        { statusCode: 204, type: null, contentTypes: [] },
+        { statusCode: 404, type: null, contentTypes: [] },
       ],
     },
     {
@@ -41,8 +69,12 @@ const fixture: RouteExport = {
       invalidates: null,
       parameters: [],
       parts: [],
-      requestBody: {type: {$ref: "#/$defs/Abc"}, required: true, contentTypes: ["application/json"]},
-      responses: [{statusCode: 200, type: null, contentTypes: []}],
+      requestBody: {
+        type: { $ref: "#/$defs/Abc" },
+        required: true,
+        contentTypes: ["application/json"],
+      },
+      responses: [{ statusCode: 200, type: null, contentTypes: [] }],
     },
     {
       id: "optionalBody",
@@ -53,14 +85,20 @@ const fixture: RouteExport = {
       invalidates: null,
       parameters: [],
       parts: [],
-      requestBody: {type: {$ref: "#/$defs/Abc"}, required: false, contentTypes: ["application/json"]},
-      responses: [{statusCode: 200, type: null, contentTypes: []}],
+      requestBody: {
+        type: { $ref: "#/$defs/Abc" },
+        required: false,
+        contentTypes: ["application/json"],
+      },
+      responses: [{ statusCode: 200, type: null, contentTypes: [] }],
     },
   ],
   schemas: {
     Abc: {
       type: "object",
-      properties: {message: {type: "string", title: "String", minLength: 1}},
+      properties: {
+        message: { type: "string", title: "String", minLength: 1 },
+      },
       required: ["message"],
       title: "Abc",
     },
@@ -114,7 +152,7 @@ test("generateSchemas covers requestBody, parameters, parts, and responses", asy
 
     expect(code).not.toContain("Response204");
   } finally {
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, { recursive: true, force: true });
   }
 });
 
@@ -124,10 +162,14 @@ test("generateCalls builds one defineRoute() call per route with the right confi
     const code = await Bun.file(join(dir, "fetch.gen.ts")).text();
 
     expect(code).toContain(`import {createApiClient} from "@spring-mox/base";`);
-    expect(code).toContain(`export const client = createApiClient({baseUrl: ""});`);
+    expect(code).toContain(
+      `export const client = createApiClient({baseUrl: ""});`,
+    );
 
     // annotation comment precedes the generated route definition
-    expect(code).toContain("// ItemController#xyz\nexport const xyz = client.defineRoute({");
+    expect(code).toContain(
+      "// ItemController#xyz\nexport const xyz = client.defineRoute({",
+    );
 
     // multi-method route: method array with both methods, path params always required
     expect(code).toContain(`method: ["GET","PUT"],`);
@@ -143,14 +185,18 @@ test("generateCalls builds one defineRoute() call per route with the right confi
     expect(code).toContain(`invalidates: null,`);
 
     // single-method + required body
-    expect(code).toContain("// ItemController#single\nexport const single = client.defineRoute({");
+    expect(code).toContain(
+      "// ItemController#single\nexport const single = client.defineRoute({",
+    );
     expect(code).toContain("body: schemas.zSingleRequestBody,");
     expect(code).toContain(`method: ["POST"],`);
 
     // single-method + optional body -> .optional() suffix
-    expect(code).toContain("body: schemas.zOptionalBodyRequestBody.optional(),");
+    expect(code).toContain(
+      "body: schemas.zOptionalBodyRequestBody.optional(),",
+    );
   } finally {
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, { recursive: true, force: true });
   }
 });
 
@@ -159,36 +205,38 @@ test("generated route builds URL, query, headers, parts, and validates response 
   try {
     const calls = await import(join(dir, "fetch.gen.ts"));
 
-    const requests: {url: string; init: RequestInit}[] = [];
+    const requests: { url: string; init: RequestInit }[] = [];
     calls.client.baseUrl = "http://x";
     calls.client.fetch = async (input: string, init: RequestInit) => {
-      requests.push({url: input, init});
-      return new Response(JSON.stringify({message: "hi"}), {
+      requests.push({ url: input, init });
+      return new Response(JSON.stringify({ message: "hi" }), {
         status: 200,
-        headers: {"content-type": "application/json"},
+        headers: { "content-type": "application/json" },
       });
     };
 
     const result = await calls.xyz({
-      path: {id: "abc123"},
-      query: {q: "search", limit: 5},
-      headers: {"x-auth": "token"},
-      parts: {file: "data", caption: "a caption"},
+      path: { id: "abc123" },
+      query: { q: "search", limit: 5 },
+      headers: { "x-auth": "token" },
+      parts: { file: "data", caption: "a caption" },
       method: "PUT",
     });
 
     expect(result.status).toBe(200);
-    expect(result.data).toEqual({message: "hi"});
+    expect(result.data).toEqual({ message: "hi" });
     expect(result.headers).toBeInstanceOf(Headers);
     expect(requests).toHaveLength(1);
     expect(requests[0]!.url).toBe("http://x/items/abc123?q=search&limit=5");
     expect(requests[0]!.init.method).toBe("PUT");
-    expect((requests[0]!.init.headers as Record<string, string>)["x-auth"]).toBe("token");
+    expect(
+      (requests[0]!.init.headers as Record<string, string>)["x-auth"],
+    ).toBe("token");
     const sentParts = requests[0]!.init.body as FormData;
     expect(sentParts.get("file")).toBe("data");
     expect(sentParts.get("caption")).toBe("a caption");
   } finally {
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, { recursive: true, force: true });
   }
 });
 
@@ -198,18 +246,18 @@ test("generated route resolves data to null for null-typed responses without rea
     const calls = await import(join(dir, "fetch.gen.ts"));
 
     calls.client.baseUrl = "http://x";
-    calls.client.fetch = async () => new Response(null, {status: 204});
+    calls.client.fetch = async () => new Response(null, { status: 204 });
 
     const result = await calls.xyz({
-      path: {id: "abc123"},
-      query: {q: "search"},
+      path: { id: "abc123" },
+      query: { q: "search" },
       method: "GET",
     });
 
     expect(result.status).toBe(204);
     expect(result.data).toBeNull();
   } finally {
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, { recursive: true, force: true });
   }
 });
 
@@ -217,14 +265,18 @@ test("generated route throws ApiResponseError on an unlisted response status", a
   const dir = await setupGeneratedDir();
   try {
     const calls = await import(join(dir, "fetch.gen.ts"));
-    const {ApiResponseError} = await import("../src/runtime.ts");
+    const { ApiResponseError } = await import("../src/runtime.ts");
 
     calls.client.baseUrl = "http://x";
-    calls.client.fetch = async () => new Response(null, {status: 500});
+    calls.client.fetch = async () => new Response(null, { status: 500 });
 
     let caught: unknown;
     try {
-      await calls.xyz({path: {id: "abc123"}, query: {q: "search"}, method: "GET"});
+      await calls.xyz({
+        path: { id: "abc123" },
+        query: { q: "search" },
+        method: "GET",
+      });
     } catch (err) {
       caught = err;
     }
@@ -232,7 +284,7 @@ test("generated route throws ApiResponseError on an unlisted response status", a
     expect(caught).toBeInstanceOf(ApiResponseError);
     expect((caught as InstanceType<typeof ApiResponseError>).status).toBe(500);
   } finally {
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, { recursive: true, force: true });
   }
 });
 
@@ -240,14 +292,18 @@ test("generated route throws ApiResponseError with typed data for a declared non
   const dir = await setupGeneratedDir();
   try {
     const calls = await import(join(dir, "fetch.gen.ts"));
-    const {ApiResponseError} = await import("../src/runtime.ts");
+    const { ApiResponseError } = await import("../src/runtime.ts");
 
     calls.client.baseUrl = "http://x";
-    calls.client.fetch = async () => new Response(null, {status: 404});
+    calls.client.fetch = async () => new Response(null, { status: 404 });
 
     let caught: unknown;
     try {
-      await calls.xyz({path: {id: "abc123"}, query: {q: "search"}, method: "GET"});
+      await calls.xyz({
+        path: { id: "abc123" },
+        query: { q: "search" },
+        method: "GET",
+      });
     } catch (err) {
       caught = err;
     }
@@ -258,6 +314,6 @@ test("generated route throws ApiResponseError with typed data for a declared non
     expect(apiErr.data).toBeNull();
     expect(apiErr.headers).toBeInstanceOf(Headers);
   } finally {
-    await rm(dir, {recursive: true, force: true});
+    await rm(dir, { recursive: true, force: true });
   }
 });

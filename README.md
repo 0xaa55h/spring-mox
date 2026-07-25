@@ -7,7 +7,7 @@ I got tired of needing to have entire OpenAPI spec generated, together with need
 
 ## How does it work?
 
-The workflow is simple. You first generate `routes.json` file on startup using Spring Mox library and then you use Spring Mox NPM package to convert it to TS calls.
+The workflow is simple. You first generate `routes.json` file on startup using Spring Mox library, and then you use Spring Mox NPM package to convert it to TS calls.
 
 ```mermaid
 flowchart TD

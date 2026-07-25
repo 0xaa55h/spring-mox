@@ -1,7 +1,7 @@
 {
   "name": "@spring-mox/base",
-  "description": "Generate type-safe routes from Spring WebMvc metadata",
-  "version": "0.1.0",
+  "description": "Generate type-safe routes from Spring WebMvc metadata (routes.json)",
+  "version": "0.2.0",
   "module": "src/index.ts",
   "type": "module",
   "exports": {
@@ -11,14 +11,18 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@biomejs/biome": "2.5.5",
+    "@types/bun": "latest",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
-    "json-refs": "^3.0.15",
     "json-schema-to-zod": "^2.8.1",
     "zod": "^4.4.3"
   }

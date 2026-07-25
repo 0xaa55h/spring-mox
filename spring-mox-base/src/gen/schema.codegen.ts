@@ -1,6 +1,11 @@
-import type {Route, RouteExport} from "../core-types.ts";
-import {jsonSchemaToZod} from "json-schema-to-zod";
-import {capitalize, CodeGenerator, groupParametersByLocation, LOCATION_SUFFIX} from "./core.ts";
+import { jsonSchemaToZod } from "json-schema-to-zod";
+import type { Route, RouteExport } from "../core-types.ts";
+import {
+  CodeGenerator,
+  capitalize,
+  groupParametersByLocation,
+  LOCATION_SUFFIX,
+} from "./core.ts";
 
 function refDefName(schema: any): string | null {
   if (schema && typeof schema === "object" && typeof schema.$ref === "string") {
@@ -47,7 +52,7 @@ export class SchemaCodeGenerator extends CodeGenerator<RouteExport> {
           module: "esm",
           type: defName,
           parserOverride: refInterceptor,
-        }).replace(/^import\s*\{\s*z\s*}\s*from\s*"zod"\s*;?\n+/, "")
+        }).replace(/^import\s*\{\s*z\s*}\s*from\s*"zod"\s*;?\n+/, ""),
       )
       .join("\n\n");
   }
@@ -131,8 +136,8 @@ export class SchemaCodeGenerator extends CodeGenerator<RouteExport> {
 
   private toZodExpr(exp: RouteExport, type: object): string {
     return jsonSchemaToZod(
-      {$schema: exp.version, $defs: exp.schemas, ...type},
-      {parserOverride: refInterceptor},
+      { $schema: exp.version, $defs: exp.schemas, ...type },
+      { parserOverride: refInterceptor },
     );
   }
 }

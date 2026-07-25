@@ -1,5 +1,5 @@
-import type {Route, RouteExport} from "../core-types.ts";
-import {capitalize, CodeGenerator} from "./core.ts";
+import type { Route, RouteExport } from "../core-types.ts";
+import { CodeGenerator, capitalize } from "./core.ts";
 
 export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
   constructor(data: RouteExport) {
@@ -27,7 +27,9 @@ export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
 
   private emitBindings(route: Route): string[] {
     const isQuery = route.method.length === 1 && route.method[0] === "GET";
-    return isQuery ? this.emitQueryBindings(route) : this.emitMutationBindings(route);
+    return isQuery
+      ? this.emitQueryBindings(route)
+      : this.emitMutationBindings(route);
   }
 
   private emitQueryBindings(route: Route): string[] {
@@ -56,14 +58,19 @@ export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
         `export function use${name}Mutation(`,
         `  options?: Parameters<typeof calls.${route.id}.mutationOptions>[0],`,
         `) {`,
-        ...(invalidates.length > 0 ? [`  const queryClient = useQueryClient();`] : []),
+        ...(invalidates.length > 0
+          ? [`  const queryClient = useQueryClient();`]
+          : []),
         `  return useMutation(calls.${route.id}.mutationOptions({`,
         ...(invalidates.length > 0
           ? [
-            `    onSuccess: () => {`,
-            ...invalidates.map((key) => `      queryClient.invalidateQueries({queryKey: [${JSON.stringify(key)}]});`),
-            `    },`,
-          ]
+              `    onSuccess: () => {`,
+              ...invalidates.map(
+                (key) =>
+                  `      queryClient.invalidateQueries({queryKey: [${JSON.stringify(key)}]});`,
+              ),
+              `    },`,
+            ]
           : []),
         `    ...options,`,
         `  }));`,

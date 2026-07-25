@@ -3,6 +3,7 @@ name: Publish spring-mox-base to npm
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:

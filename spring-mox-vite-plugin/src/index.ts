@@ -21,8 +21,3 @@ export default function springMox({
     },
   };
 }
-
-springMox({
-  input: Bun.file(""),
-  output: Bun.file(""),
-});

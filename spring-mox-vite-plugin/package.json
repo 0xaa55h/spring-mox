@@ -1,7 +1,7 @@
 {
   "name": "@spring-mox/vite-plugin-react",
   "description": "Vite plugin that generates type-safe routes from Spring WebMvc metadata (routes.json) using @spring-mox/base",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "module": "src/index.ts",
   "license": "MIT",
   "keywords": [

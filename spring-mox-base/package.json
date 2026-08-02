@@ -1,7 +1,7 @@
 {
   "name": "@spring-mox/base",
   "description": "Generate type-safe routes from Spring WebMvc metadata (routes.json)",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "module": "src/index.ts",
   "license": "MIT",
   "keywords": [

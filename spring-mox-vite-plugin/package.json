@@ -29,7 +29,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@spring-mox/base": "0.3.0",
+    "@spring-mox/base": "latest",
     "vite": "^8.1.5"
   }
 }

@@ -22,7 +22,6 @@ function refInterceptor(schema: any) {
 }
 
 export class SchemaCodeGenerator extends CodeGenerator<RouteExport> {
-
   override async prepare(): Promise<void> {
     this.writeLine(`import { z } from "zod";`);
     this.writeLine("");

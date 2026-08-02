@@ -13,7 +13,6 @@ const LOCATION_CONFIG_KEY: Record<ParameterLocation, string> = {
 };
 
 export class FetchCodeGenerator extends CodeGenerator<RouteExport> {
-
   override async prepare(): Promise<void> {
     this.writeLines([
       `import {createApiClient} from "@spring-mox/base";`,

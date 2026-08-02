@@ -2,7 +2,6 @@ import type { Route, RouteExport } from "../core-types.ts";
 import { CodeGenerator, capitalize } from "./core.ts";
 
 export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
-
   override async prepare(): Promise<void> {
     this.writeLines([
       `import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";`,

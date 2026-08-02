@@ -13,9 +13,6 @@ const LOCATION_CONFIG_KEY: Record<ParameterLocation, string> = {
 };
 
 export class FetchCodeGenerator extends CodeGenerator<RouteExport> {
-  constructor(data: RouteExport) {
-    super(data);
-  }
 
   override async prepare(): Promise<void> {
     this.writeLines([

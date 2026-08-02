@@ -2,9 +2,6 @@ import type { Route, RouteExport } from "../core-types.ts";
 import { CodeGenerator, capitalize } from "./core.ts";
 
 export class TanStackCodeGenerator extends CodeGenerator<RouteExport> {
-  constructor(data: RouteExport) {
-    super(data);
-  }
 
   override async prepare(): Promise<void> {
     this.writeLines([

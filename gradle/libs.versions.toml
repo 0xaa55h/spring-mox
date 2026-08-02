@@ -11,6 +11,7 @@ jsonschema-generator = { module = "com.github.victools:jsonschema-generator", ve
 jsonschema-module-jackson = { module = "com.github.victools:jsonschema-module-jackson", version.ref = "victools" }
 jsonschema-module-jakarta-validation = { module = "com.github.victools:jsonschema-module-jakarta-validation", version.ref = "victools" }
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api" }
+spring-data-commons = { module = "org.springframework.data:spring-data-commons", version.ref = "spring-boot" }
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }

@@ -1,9 +1,12 @@
-package dev.aa55h.spring.mox.util
+package dev.aa55h.spring.mox
 
 import dev.aa55h.spring.mox.annotation.PossibleResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -39,7 +42,21 @@ class TestController {
             a = ""
         )
     }
+
+    @GetMapping("/test5")
+    fun paged(page: Pageable): First {
+        return First(
+            a = ""
+        )
+    }
 }
 
 data class First(val a: String)
 data class Second(val b: String)
+
+@SpringBootApplication
+class Application
+
+fun main(args: Array<String>) {
+    runApplication<Application>(*args)
+}

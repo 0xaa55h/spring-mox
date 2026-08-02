@@ -5,18 +5,17 @@ import dev.aa55h.spring.mox.annotation.ClientCacheKey
 import dev.aa55h.spring.mox.annotation.Invalidates
 import dev.aa55h.spring.mox.annotation.PossibleResponse
 import dev.aa55h.spring.mox.annotation.RouteId
-import org.springframework.http.HttpMethod
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.ValueConstants
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubtypeOf
+import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.kotlinFunction
@@ -52,6 +51,20 @@ class DefaultRouteConfigurer(
             val requestBody = parameter.findAnnotation<RequestBody>()
 
             when {
+                parameter.type.isSubtypeOf(Pageable::class.starProjectedType) -> {
+                    val pageableDefault = parameter.findAnnotation<PageableDefault>()
+                    val defaultPage = pageableDefault?.page ?: 0
+                    val defaultSize = pageableDefault?.size ?: 10
+                    val defaultSort = pageableDefault?.sort?.takeIf { it.isNotEmpty() }?.joinToString(",")
+
+                    builder.queryParam("page", Int::class.javaObjectType, false, defaultPage.toString())
+                    builder.queryParam("size", Int::class.javaObjectType, false, defaultSize.toString())
+                    builder.queryParam("sort", String::class.java, false, defaultSort)
+
+                    cacheKey += "${configurationProperties.prefixes.query}page"
+                    cacheKey += "${configurationProperties.prefixes.query}size"
+                    cacheKey += "${configurationProperties.prefixes.query}sort"
+                }
                 pathVariable != null -> {
                     val paramName = pathVariable.value.ifEmpty { name!! }
                     builder.pathParam(paramName, type)

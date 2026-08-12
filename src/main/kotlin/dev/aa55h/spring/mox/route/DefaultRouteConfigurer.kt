@@ -1,6 +1,6 @@
 package dev.aa55h.spring.mox.route
 
-import dev.aa55h.spring.mox.MoxConfigurationProperties
+import dev.aa55h.spring.mox.MoxAutoConfiguration
 import dev.aa55h.spring.mox.annotation.ClientCacheKey
 import dev.aa55h.spring.mox.annotation.Invalidates
 import dev.aa55h.spring.mox.annotation.PossibleResponse
@@ -22,7 +22,7 @@ import kotlin.reflect.jvm.kotlinFunction
 
 @Component
 class DefaultRouteConfigurer(
-    private val configurationProperties: MoxConfigurationProperties
+    private val configurationProperties: MoxAutoConfiguration
 ) : RouteConfigurer {
 
     override fun configure(builder: RouteBuilder, mappingInfo: RequestMappingInfo, handlerMethod: HandlerMethod) {

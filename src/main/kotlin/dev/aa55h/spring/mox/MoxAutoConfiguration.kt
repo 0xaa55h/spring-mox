@@ -5,25 +5,37 @@ import org.springframework.context.annotation.Configuration
 
 /**
  * Configuration properties for Mox library.
- * @param enabled Whether to enable the route generation.
- * @param outputPath The path to output route information.
- * @param packages The packages to match rest controllers against. Empty means to match all controllers (even the default "/error").
  */
 @Configuration
 @ConfigurationProperties(prefix = "mox")
-data class MoxConfigurationProperties(
-    val enabled: Boolean = true,
-    val outputPath: String = "./routes.json",
-    val packages: List<String> = emptyList(),
-    val prefixes: Prefixes = Prefixes()
-) {
+class MoxAutoConfiguration {
+    /**
+     * Enable Spring Mox
+     */
+    var enabled: Boolean = true
+
+    /**
+     * Output path for routes.json format file
+     */
+    var outputPath: String = "./routes.json"
+
+    /**
+     * The packages to exclude route scanning from
+     */
+    var packages: List<String> = emptyList()
+
+    /**
+     * Optional prefixes configuration
+     */
+    var prefixes: Prefixes = Prefixes()
+
     /**
      * Prefixes used in [dev.aa55h.spring.mox.route.DefaultRouteConfigurer] for building a cache key.
      * @param path The string used in query key to prefix a path parameter.
      * @param query The string used in query key to prefix a query parameter.
      */
     data class Prefixes(
-        val path: String = "path:",
-        val query: String = "query:"
+        var path: String = "path:",
+        var query: String = "query:"
     )
 }

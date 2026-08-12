@@ -33,7 +33,7 @@ Biome (lint/format) is configured once at the repo [root](./biome.json) and appl
 ### Spring Boot library (the thing which generates `routes.json`)
 
 - Add as dependency from Maven Central: `implementation("dev.aa55h:spring-mox:0.1.0")` (or Maven equivalent)
-- Consult [MoxConfigurationProperties](./src/main/kotlin/dev/aa55h/spring/mox/MoxConfigurationProperties.kt) for further configuration. The default configuration generates `routes.json` in current working directory.
+- Consult [MoxConfigurationProperties](src/main/kotlin/dev/aa55h/spring/mox/MoxAutoConfiguration.kt) for further configuration. The default configuration generates `routes.json` in current working directory.
 
 Configuration is under the `mox` prefix:
 

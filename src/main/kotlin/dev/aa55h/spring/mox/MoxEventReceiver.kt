@@ -21,7 +21,7 @@ import java.io.File
 
 @Component
 class MoxEventReceiver(
-    val configurationProperties: MoxConfigurationProperties,
+    val configurationProperties: MoxAutoConfiguration,
     objectMapper: ObjectMapper,
     schemaGenerator: SchemaGenerator,
     typeInformationSerializer: TypeInformationSerializer,

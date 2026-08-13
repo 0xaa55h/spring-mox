@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "dev.aa55h"
-version = "0.2.1"
+version = "0.2.2"
 description = "spring-mox"
 
 java {

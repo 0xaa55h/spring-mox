@@ -45,7 +45,7 @@ class MoxEventReceiver(
     fun on(event: ContextRefreshedEvent) {
         if (!configurationProperties.enabled) return
         logger.info("Regenerating route data...")
-        val requestMappingHandlerMapping = event.applicationContext.getBean<RequestMappingHandlerMapping>()
+        val requestMappingHandlerMapping = event.applicationContext.getBean<RequestMappingHandlerMapping>("requestMappingHandlerMapping")
         val routes = requestMappingHandlerMapping.handlerMethods
             .filter { pair -> configurationProperties.packages.isEmpty()
                     || configurationProperties.packages.any { pair.value.beanType.name.startsWith(it) } }
